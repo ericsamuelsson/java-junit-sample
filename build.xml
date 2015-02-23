@@ -1,50 +1,104 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<project basedir="." default="build" name="WebStarterApp">
-    <property environment="env"/>
-    <property name="srcDir" value="."/>
-    <property name="debuglevel" value="source,lines,vars"/>
-    <property name="target" value="1.5"/>
-    <property name="source" value="1.5"/>
-    <condition property="ARCHIVE_DIR" value="${env.ARCHIVE_DIR}" else=".">
-        <isset property="env.ARCHIVE_DIR" />
-    </condition>
-	<property name="warname" value= "webStarterApp.war"/>
-    <path id="classpathDir">
-        <pathelement location="bin"/>
-        <pathelement location="dep-jar/com.ibm.ws.javaee.jaxrs.1.1_1.0.1.jar"/>
-    </path>
-    <target name="init">
-        <mkdir dir="bin"/>
-    </target>
-    <target name="clean">
-        <delete dir="bin"/>
-		<delete file="${ARCHIVE_DIR}/${warname}" />		
-    </target>
-    <target name="build" depends="build-project,build-war"/>
-    <target name="cleanall" depends="clean"/>
-    <target name="build-project" depends="clean,init">
-    	<copy todir="${ARCHIVE_DIR}">
-	      <fileset file="manifest.yml" />
-	    </copy>
-        <echo message="${ant.project.name}: ${ant.file}"/>
-        <javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}"
-		includeantruntime="false">
-            <src path="src"/>
-            <classpath refid="classpathDir"/>
-        </javac>
-    </target>
- 
-   <target name="build-war" depends="build-project">
-	  <war destfile="${ARCHIVE_DIR}/${warname}" webxml="WebContent/WEB-INF/web.xml">
-	  	<webinf dir="WebContent/WEB-INF">
-	  		<include name="resources"/>
-	    </webinf>
-	  	<fileset dir="WebContent">
-	  		<include name="**/*"/>
-	    </fileset>
-	  	<classes dir="bin"/>
-	  </war>
-   </target>
+<project basedir="." default="dist" name="WebStarterApp">
+	<property environment="env" />
+	<property name="srcDir" value="." />
+	<property name="debuglevel" value="source,lines,vars" />
+	<property name="target" value="1.5" />
+	<property name="source" value="1.5" />
+	<property name="testBaseDir" value="test" />
+	<property name="test.src.dir" value="test/src" />
+	<property name="test.bin.dir" value="test/bin" />
+	<property name="test.lib.dir" value="test/lib" />
+	<property name="testResults.dir" value="tests" />
 
+	<condition property="ARCHIVE_DIR" value="${env.ARCHIVE_DIR}" else=".">
+		<isset property="env.ARCHIVE_DIR" />
+	</condition>
+	<property name="warname" value="webStarterApp.war" />
+	<path id="classpath">
+		<pathelement location="bin" />
+		<pathelement location="lib/com.ibm.ws.javaee.jaxrs.1.1_1.0.1.jar" />
+	</path>
+	<target name="init">
+		<mkdir dir="bin" />
+	</target>
+
+	<target name="clean-tests">
+		<delete dir="${test.bin.dir}" />
+		<delete dir="${testResults.dir}" />
+	</target>
+
+	<target name="clean" depends="clean-tests">
+		<delete dir="bin" />
+		<delete file="${ARCHIVE_DIR}/${warname}" />
+		<delete dir="${test.bin.dir}" />
+		<delete dir="${testResults.dir}" />
+	</target>
+	<target name="build" depends="build-project,build-war" />
+	<target name="cleanall" depends="clean" />
+	<target name="build-project" depends="clean,init">
+		<copy todir="${ARCHIVE_DIR}">
+			<fileset file="manifest.yml" />
+		</copy>
+		<echo message="${ant.project.name}: ${ant.file}" />
+		<javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}" includeantruntime="false">
+			<src path="src" />
+			<classpath refid="classpath" />
+		</javac>
+	</target>
+
+	<target name="build-war" depends="build-project">
+		<war destfile="${ARCHIVE_DIR}/${warname}" webxml="WebContent/WEB-INF/web.xml">
+			<webinf dir="WebContent/WEB-INF">
+				<include name="resources" />
+			</webinf>
+			<fileset dir="WebContent">
+				<include name="**/*" />
+			</fileset>
+			<classes dir="bin" />
+		</war>
+	</target>
+
+	<target name="init-test">
+		<mkdir dir="${test.bin.dir}" />
+		<mkdir dir="${testResults.dir}" />
+	</target>
+
+	<target name="build-unit-tests" depends="build-war, init-test">
+		<javac debug="true" debuglevel="${debuglevel}" destdir="${test.bin.dir}" source="${source}" target="${target}" includeantruntime="false">
+			<src path="${test.src.dir}" />
+			<classpath>
+				<fileset dir="${test.lib.dir}">
+					<include name="**/*.jar" />
+				</fileset>
+				<fileset dir="${ARCHIVE_DIR}">
+					<include name="**/*.jar" />
+				</fileset>
+			</classpath>
+			<classpath refid="classpath" />
+		</javac>
+		<jar destfile="${test.bin.dir}/unit-tests.jar" basedir="${test.bin.dir}" />
+	</target>
+
+	<target name="unit-test" depends="build-unit-tests">
+		<junit printsummary="yes" haltonfailure="yes">
+			<classpath>
+				<path refid="classpath" />
+				<fileset dir="${test.bin.dir}">
+					<include name="**/*.jar" />
+				</fileset>
+				<fileset dir="${test.lib.dir}">
+					<include name="**/*.jar" />
+				</fileset>
+			</classpath>
+			<formatter type="xml" />
+			<batchtest fork="yes" todir="tests">
+				<formatter type="xml" />
+				<fileset dir="${test.src.dir}" includes="**/*Test.java" />
+			</batchtest>
+		</junit>
+	</target>
+
+    <target name="dist" depends="build,unit-test" />
 </project>

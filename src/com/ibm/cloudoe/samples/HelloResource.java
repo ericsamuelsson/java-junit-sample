@@ -7,7 +7,15 @@ import javax.ws.rs.Path;
 @Path("/hello")
 public class HelloResource {
 
-	@GET
+    public String getInformationInternal() {
+        return "Hi World!";
+    }
+
+    public String getApplicationVersion() {
+        return System.getenv("APP_VERSION");
+    }
+
+    @GET
 	public String getInformation() {
 
 		// 'VCAP_APPLICATION' is in JSON format, it contains useful information about a deployed application
@@ -17,7 +25,6 @@ public class HelloResource {
 		// String envServices = System.getenv("VCAP_SERVICES");
 		// JSONObject sysEnv = new JSONObject(System.getenv());
 		
-		return "Hi World!";
-
+		return getInformationInternal();
 	}
 }
