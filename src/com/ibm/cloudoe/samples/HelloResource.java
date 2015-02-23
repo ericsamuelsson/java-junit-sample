@@ -11,10 +11,6 @@ public class HelloResource {
         return "Hi World!";
     }
 
-    public String getApplicationVersion() {
-        return System.getenv("APP_VERSION");
-    }
-
     @GET
 	public String getInformation() {
 
@@ -24,7 +20,7 @@ public class HelloResource {
 		// 'VCAP_SERVICES' contains all the credentials of services bound to this application.
 		// String envServices = System.getenv("VCAP_SERVICES");
 		// JSONObject sysEnv = new JSONObject(System.getenv());
-		
+
 		return getInformationInternal();
 	}
 }

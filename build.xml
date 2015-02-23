@@ -48,7 +48,11 @@
 		</javac>
 	</target>
 
-	<target name="build-war" depends="build-project">
+    <target name="set-version">
+        <echo file="WebContent/VERSION" message="${env.APP_VERSION}"/>
+    </target>
+
+	<target name="build-war" depends="build-project, set-version">
 		<war destfile="${ARCHIVE_DIR}/${warname}" webxml="WebContent/WEB-INF/web.xml">
 			<webinf dir="WebContent/WEB-INF">
 				<include name="resources" />
@@ -100,5 +104,5 @@
 		</junit>
 	</target>
 
-    <target name="dist" depends="build,unit-test" />
+    <target name="dist" depends="build, set-version, unit-test" />
 </project>
