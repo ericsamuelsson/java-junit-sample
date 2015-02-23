@@ -7,6 +7,7 @@
 	<property name="target" value="1.5" />
 	<property name="source" value="1.5" />
 	<property name="testBaseDir" value="test" />
+    <property name="resources.dir" value="resources" />
 	<property name="test.src.dir" value="test/src" />
 	<property name="test.bin.dir" value="test/bin" />
 	<property name="test.lib.dir" value="test/lib" />
@@ -15,10 +16,16 @@
 	<condition property="ARCHIVE_DIR" value="${env.ARCHIVE_DIR}" else=".">
 		<isset property="env.ARCHIVE_DIR" />
 	</condition>
+
+    <condition property="APP_VERSION" value="${env.APP_VERSION}" else="">
+        <isset property="env.APP_VERSION" />
+    </condition>
+
 	<property name="warname" value="webStarterApp.war" />
 	<path id="classpath">
 		<pathelement location="bin" />
 		<pathelement location="lib/com.ibm.ws.javaee.jaxrs.1.1_1.0.1.jar" />
+        <pathelement location="${resources.dir}" />
 	</path>
 	<target name="init">
 		<mkdir dir="bin" />
@@ -49,14 +56,13 @@
 	</target>
 
     <target name="set-version">
-        <echo file="WebContent/VERSION" message="${env.APP_VERSION}"/>
+        <mkdir dir="${resources.dir}" />
+        <echo file="${resources.dir}/VERSION" message="${APP_VERSION}"/>
     </target>
 
 	<target name="build-war" depends="build-project, set-version">
 		<war destfile="${ARCHIVE_DIR}/${warname}" webxml="WebContent/WEB-INF/web.xml">
-			<webinf dir="WebContent/WEB-INF">
-				<include name="resources" />
-			</webinf>
+	        <classes dir="${resources.dir}"/>
 			<fileset dir="WebContent">
 				<include name="**/*" />
 			</fileset>
@@ -77,7 +83,7 @@
 					<include name="**/*.jar" />
 				</fileset>
 				<fileset dir="${ARCHIVE_DIR}">
-					<include name="**/*.jar" />
+					<include name="**/*.java" />
 				</fileset>
 			</classpath>
 			<classpath refid="classpath" />
@@ -86,7 +92,7 @@
 	</target>
 
 	<target name="unit-test" depends="build-unit-tests">
-		<junit printsummary="yes" haltonfailure="yes">
+		<junit printsummary="yes" haltonfailure="yes" dir="${ARCHIVE_DIR}">
 			<classpath>
 				<path refid="classpath" />
 				<fileset dir="${test.bin.dir}">
