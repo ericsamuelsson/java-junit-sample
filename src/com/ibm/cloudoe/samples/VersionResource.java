@@ -1,8 +1,7 @@
 package com.ibm.cloudoe.samples;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.io.InputStream;
+import java.util.Scanner;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -12,11 +11,10 @@ import javax.ws.rs.Path;
 public class VersionResource {
 
     public String getApplicationVersion() {
-        byte[] encoded;
+        InputStream input = getClass().getResourceAsStream("/VERSION");
         try {
-            encoded = Files.readAllBytes(Paths.get("VERSION"));
-            return new String(encoded, "UTF-8");
-        } catch (IOException e) {
+            return new Scanner(input,"UTF-8").useDelimiter("\\A").next();
+        } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
