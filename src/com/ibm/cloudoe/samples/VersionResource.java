@@ -12,11 +12,20 @@ public class VersionResource {
 
     public String getApplicationVersion() {
         InputStream input = getClass().getResourceAsStream("/VERSION");
+        Scanner s = null;
         try {
-            return new Scanner(input,"UTF-8").useDelimiter("\\A").next();
-        } catch (Exception e) {
-            e.printStackTrace();
+            s = new Scanner(input,"UTF-8").useDelimiter("\\A");
+            if (s.hasNext()) {
+                String version = s.next();
+                return version;
+            }
             return null;
+        } catch (Exception e) {
+            return null;
+        } finally {
+            if (s != null) {
+                s.close();
+            }
         }
     }
 
